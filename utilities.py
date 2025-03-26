@@ -1,5 +1,4 @@
 from elsai_core.model import AzureOpenAIConnector
-from elsai_core.llm_services import SummarizationService
 from langchain.schema import HumanMessage, SystemMessage
 import json
 import feedparser
@@ -217,11 +216,21 @@ def news_articles(search_queries, df, company, corporate_actions, adverse_media,
             print(f"Cannot fetch content for {url}: {e}")
             return None
         
-    def get_content_summary(content):
+    def get_content_summary(text):
         try:
-            summariser = SummarizationService(chat)
-            result = summariser.summarize(content)                 
-            return result
+            prompt = f"""
+            Summarize the given content in a few sentences. Every key point must be included in the summary. Return only the text.
+            Content: {text}
+            
+            OUTPUT FORMAT:
+            Summary
+            """
+            messages = [
+                        SystemMessage(content = "You are a summarisation AI."),
+                        HumanMessage(content = prompt)
+                    ]                    
+            summary = chat(messages)
+            return summary.content
         
         except Exception as e:
             print(f"Error summarizing content: {e}")
@@ -298,7 +307,7 @@ def news_articles(search_queries, df, company, corporate_actions, adverse_media,
 def articles(company, corporate_actions, adverse_media, max_results, fromDate, toDate):
     entities = [company]
     adverse_keywords = adverse_media
-    non_adverse_keywords = ["growth", "recognition", "innovation", "sustainability", "CSR"]
+    non_adverse_keywords = ["award", "recognition", "innovation", "sustainability", "CSR", "growth"]
     corporate_actions = corporate_actions
     
     def sentiment_analysis(final_analysis, company):
@@ -360,9 +369,19 @@ def articles(company, corporate_actions, adverse_media, max_results, fromDate, t
 
     def analyze_with_gpt(text):
         try:
-            summariser = SummarizationService(chat)
-            result = summariser.summarize(text)                 
-            return result
+            prompt = f"""
+            Summarize the given content in a few sentences. Every key point must be included in the summary. Return only the text.
+            Content: {text}
+            
+            OUTPUT FORMAT:
+            Summary
+            """
+            messages = [
+                        SystemMessage(content = "You are a summarisation AI."),
+                        HumanMessage(content = prompt)
+                    ]                    
+            summary = chat(messages)
+            return summary.content
         
         except Exception as e:
             print(f"Error summarizing content: {e}")

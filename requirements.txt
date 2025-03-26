@@ -13,3 +13,7 @@ prettytable
 xlsxwriter
 markdown
 weasyprint
+fastapi
+uvicorn
+python-multipart
+tabulate
